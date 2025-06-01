@@ -44,11 +44,15 @@ export class RedisDataStore<T> implements DataStore<T> {
     }
   }
 
-  async set(key: string, value: T): Promise<void> {
+  async set(key: string, value: T, ttlSeconds?: number): Promise<void> {
     try {
       const serialized = JSON.stringify(value);
-      await this.client.set(key, serialized);
-      logger.debug(`RedisDataStore: Set key "${key}" in Redis with serialized value: ${serialized}`);
+      if (ttlSeconds) {
+        await this.client.set(key, serialized, 'EX', ttlSeconds);
+      } else {
+        await this.client.set(key, serialized);
+      }
+      logger.debug(`RedisDataStore: Set key "${key}" with TTL ${ttlSeconds ?? 'none'}`);
     } catch (err) {
       logger.error(`RedisDataStore: Failed to set key "${key}": ${err}`);
     }

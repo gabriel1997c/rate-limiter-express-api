@@ -29,8 +29,8 @@ export abstract class BaseRateLimiter<RateLimiterConfig, State> implements RateL
     return `${clientId}:${endpoint}:${this.algorithm}`;
   }
 
-  protected async saveState(key: string, state: State): Promise<void> {
-    await this.store.set(key, state);
+  protected async saveState(key: string, state: State, ttlSeconds?: number): Promise<void> {
+    await this.store.set(key, state, ttlSeconds);
   }
 
   abstract allow(clientId: ClientId, endpoint: Endpoint): Promise<RateLimitResult>;

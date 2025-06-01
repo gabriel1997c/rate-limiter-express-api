@@ -7,10 +7,16 @@ describe('TokenBucketRateLimiter', () => {
   const key = `${clientId}:${endpoint}:${algorithm}`;
   const capacity = 5;
   const tokenRegenerationRate = 0.001;
+  const envVarMargin = 5;
+  const ttlSeconds = capacity / tokenRegenerationRate / 1000 + envVarMargin;
 
   let store: { get: jest.Mock; set: jest.Mock };
   let config: TokenBucketConfig;
   let limiter: TokenBucketRateLimiter;
+
+  beforeAll(() => {
+    process.env.RATE_LIMIT_TTL_MARGIN_SECONDS = `${envVarMargin}`;
+  });
 
   beforeEach(() => {
     jest.useFakeTimers();
@@ -39,6 +45,7 @@ describe('TokenBucketRateLimiter', () => {
       expect.objectContaining({
         tokens: expectedRemainingTokens,
       }),
+      ttlSeconds,
     );
 
     expect(result.allowed).toBe(true);
@@ -66,6 +73,7 @@ describe('TokenBucketRateLimiter', () => {
         tokens: 4,
         lastTokenCalcTime: 3000,
       }),
+      ttlSeconds,
     );
 
     expect(result.allowed).toBe(true);
@@ -126,6 +134,7 @@ describe('TokenBucketRateLimiter', () => {
       expect.objectContaining({
         lastTokenCalcTime: 2000,
       }),
+      ttlSeconds,
     );
   });
 });

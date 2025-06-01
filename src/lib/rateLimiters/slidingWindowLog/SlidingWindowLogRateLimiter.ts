@@ -1,6 +1,7 @@
 import { RateLimitResult, BaseRateLimiter } from '../shared';
 import { SlidingWindowLogConfig, SlidingWindowLogState } from './types';
 import { ClientId, Endpoint, ClientIdEndpointAlgorithmKey } from '../../../types';
+import { getRateLimitTtlMargin } from '../../../shared/utils';
 
 export class SlidingWindowLogRateLimiter extends BaseRateLimiter<SlidingWindowLogConfig, SlidingWindowLogState> {
   protected algorithm = 'sliding-window-log';
@@ -15,7 +16,8 @@ export class SlidingWindowLogRateLimiter extends BaseRateLimiter<SlidingWindowLo
 
     if (allowed) {
       state.timestamps.push(now);
-      await this.saveState(key, state);
+      const ttlSeconds = Math.ceil(this.config.windowMs / 1000) + getRateLimitTtlMargin();
+      await this.saveState(key, state, ttlSeconds);
     }
 
     return this.buildResult(key, allowed, state, now);

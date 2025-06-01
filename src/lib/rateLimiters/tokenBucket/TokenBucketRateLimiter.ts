@@ -1,3 +1,4 @@
+import { getRateLimitTtlMargin } from '../../../shared/utils';
 import { ClientId, ClientIdEndpointAlgorithmKey, Endpoint } from '../../../types';
 import { RateLimitResult, BaseRateLimiter } from '../shared';
 import { TokenBucketConfig, TokenBucketState } from './types';
@@ -13,7 +14,10 @@ export class TokenBucketRateLimiter extends BaseRateLimiter<TokenBucketConfig, T
     this.recalculateTokens(state, now);
 
     const allowed = this.consumeToken(state);
-    await this.saveState(key, state);
+
+    const ttlSeconds = Math.ceil(this.config.capacity / this.config.tokenRegenerationRate / 1000) + getRateLimitTtlMargin();
+
+    await this.saveState(key, state, ttlSeconds);
 
     return this.buildResult(state, allowed, key, now);
   }
