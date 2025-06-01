@@ -19,6 +19,7 @@ describe('TokenBucketRateLimiter', () => {
   });
 
   beforeEach(() => {
+    process.env.USE_TTL = 'true';
     jest.useFakeTimers();
     jest.setSystemTime(new Date(0));
 
@@ -33,6 +34,27 @@ describe('TokenBucketRateLimiter', () => {
 
   afterEach(() => {
     jest.useRealTimers();
+  });
+
+  it('should not apply TTL on store.set when USE_TTL is false', async () => {
+    process.env.USE_TTL = 'false';
+
+    store.get.mockResolvedValue(null);
+
+    const result = await limiter.allow(clientId, endpoint);
+
+    const expectedRemainingTokens = capacity - 1;
+
+    expect(store.set).toHaveBeenCalledWith(
+      key,
+      expect.objectContaining({
+        tokens: expectedRemainingTokens,
+      }),
+      undefined,
+    );
+
+    expect(result.allowed).toBe(true);
+    expect(result.remaining).toBe(expectedRemainingTokens);
   });
 
   it('should allow a request when tokens are available', async () => {

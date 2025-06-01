@@ -19,6 +19,7 @@ describe('SlidingWindowLogRateLimiter', () => {
   });
 
   beforeEach(() => {
+    process.env.USE_TTL = 'true';
     jest.useFakeTimers();
     jest.setSystemTime(new Date(0));
 
@@ -33,6 +34,25 @@ describe('SlidingWindowLogRateLimiter', () => {
 
   afterEach(() => {
     jest.useRealTimers();
+  });
+
+  it('should not apply TTL on store.set when USE_TTL is false', async () => {
+    process.env.USE_TTL = 'false';
+
+    store.get.mockResolvedValue(null);
+
+    const result = await limiter.allow(clientId, endpoint);
+
+    expect(store.set).toHaveBeenCalledWith(
+      key,
+      expect.objectContaining({
+        timestamps: [0],
+      }),
+      undefined,
+    );
+
+    expect(result.allowed).toBe(true);
+    expect(result.remaining).toBe(limit - 1);
   });
 
   it('should allow requests when the log is not filled up to the window limit', async () => {

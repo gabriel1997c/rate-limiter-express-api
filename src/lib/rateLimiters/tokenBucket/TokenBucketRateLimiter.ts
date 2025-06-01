@@ -1,4 +1,4 @@
-import { getRateLimitTtlMargin } from '../../../shared/utils';
+import { getRateLimitTtlMargin, isTtlEnabled } from '../../../shared/utils';
 import { ClientId, ClientIdEndpointAlgorithmKey, Endpoint } from '../../../types';
 import { RateLimitResult, BaseRateLimiter } from '../shared';
 import { TokenBucketConfig, TokenBucketState } from './types';
@@ -15,7 +15,9 @@ export class TokenBucketRateLimiter extends BaseRateLimiter<TokenBucketConfig, T
 
     const allowed = this.consumeToken(state);
 
-    const ttlSeconds = Math.ceil(this.config.capacity / this.config.tokenRegenerationRate / 1000) + getRateLimitTtlMargin();
+    const ttlSeconds = isTtlEnabled()
+      ? Math.ceil(this.config.capacity / this.config.tokenRegenerationRate / 1000) + getRateLimitTtlMargin()
+      : undefined;
 
     await this.saveState(key, state, ttlSeconds);
 
@@ -66,7 +68,13 @@ export class TokenBucketRateLimiter extends BaseRateLimiter<TokenBucketConfig, T
   private async loadState(key: string, now: number): Promise<TokenBucketState> {
     const state = await this.store.get(key);
 
+    const maxStaleDurationMs = this.config.capacity / this.config.tokenRegenerationRate;
+
     if (!this.isValidState(state)) {
+      return this.initializeState(now);
+    }
+
+    if (now - state.lastTokenCalcTime > maxStaleDurationMs) {
       return this.initializeState(now);
     }
 
