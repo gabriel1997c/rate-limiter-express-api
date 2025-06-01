@@ -32,6 +32,10 @@ export async function createApp() {
   app.use(barRouter);
   app.use(fooRouter);
 
+  app.use((_req, res, _next) => {
+    res.status(404).json({ error: 'Route not found' });
+  });
+
   app.use(errorHandler);
 
   return { app, store };
