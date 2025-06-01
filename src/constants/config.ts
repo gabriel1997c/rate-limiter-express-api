@@ -1,3 +1,3 @@
-export const CLIENT_IDS = ['client-a', 'client-b'] as const;
-export const ENDPOINTS = ['foo'] as const;
-export const ALGORITHMS = ['token-bucket'] as const;
+export const CLIENT_IDS = ['client-1', 'client-2'] as const;
+export const ENDPOINTS = ['foo', 'bar'] as const;
+export const ALGORITHMS = ['token-bucket', 'sliding-window-log'] as const;

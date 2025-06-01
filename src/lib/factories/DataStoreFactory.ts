@@ -7,12 +7,14 @@ interface StoreOptions {
   type: StoreType;
   redisHost?: string;
   redisPort?: number;
+  redisUsername?: string;
+  redisPassword?: string;
   useTls?: boolean;
 }
 
 export class DataStoreFactory {
   static async create<T>(options: StoreOptions): Promise<DataStore<T>> {
-    const { type, redisHost, redisPort, useTls } = options;
+    const { type, redisHost, redisPort, redisUsername, redisPassword, useTls } = options;
 
     try {
       switch (type) {
@@ -22,10 +24,10 @@ export class DataStoreFactory {
 
         case 'redis': {
           logger.debug('Connecting to RedisDataStore');
-          if (!redisHost || !redisPort) {
+          if (!redisHost || !redisPort || !redisUsername || !redisPassword) {
             throw new Error('Missing Redis URL for redis store');
           }
-          const redisStore = new RedisDataStore<T>(redisHost, redisPort, useTls);
+          const redisStore = new RedisDataStore<T>(redisHost, redisPort, redisUsername, redisPassword, useTls);
           await redisStore.testConnection();
           return redisStore;
         }

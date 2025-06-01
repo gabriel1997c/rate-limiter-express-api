@@ -15,6 +15,10 @@ export class TokenBucketRateLimiter extends BaseRateLimiter<TokenBucketConfig, T
     const allowed = this.consumeToken(state);
     await this.saveState(key, state);
 
+    return this.buildResult(state, allowed, key, now);
+  }
+
+  private buildResult(state: TokenBucketState, allowed: boolean, key: string, now: number): RateLimitResult {
     const limit = this.config.capacity;
     const remaining = Math.floor(state.tokens);
     const used = Math.ceil(limit - state.tokens);
@@ -51,10 +55,14 @@ export class TokenBucketRateLimiter extends BaseRateLimiter<TokenBucketConfig, T
     };
   }
 
+  private isValidState(state: any): state is TokenBucketState {
+    return state && typeof state.tokens === 'number' && !Number.isNaN(state.tokens) && typeof state.lastTokenCalcTime === 'number';
+  }
+
   private async loadState(key: string, now: number): Promise<TokenBucketState> {
     const state = await this.store.get(key);
 
-    if (!state || typeof state.tokens !== 'number' || Number.isNaN(state.tokens) || typeof state.lastTokenCalcTime !== 'number') {
+    if (!this.isValidState(state)) {
       return this.initializeState(now);
     }
 

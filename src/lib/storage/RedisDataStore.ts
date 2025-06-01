@@ -5,10 +5,12 @@ import Redis from 'ioredis';
 export class RedisDataStore<T> implements DataStore<T> {
   private readonly client: Redis;
 
-  constructor(redisHost: string, redisPort: number, useTls: boolean = false) {
+  constructor(redisHost: string, redisPort: number, redisUsername: string, redisPassword: string, useTls: boolean = false) {
     this.client = new Redis({
       host: redisHost,
       port: redisPort,
+      username: redisUsername,
+      password: redisPassword,
       ...(useTls ? { tls: {} } : {}),
       lazyConnect: true,
     });

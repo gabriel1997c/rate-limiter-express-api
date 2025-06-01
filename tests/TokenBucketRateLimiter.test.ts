@@ -1,7 +1,7 @@
 import { TokenBucketConfig, TokenBucketRateLimiter } from '../src/lib/rateLimiters';
 
 describe('TokenBucketRateLimiter', () => {
-  const clientId = 'client-a';
+  const clientId = 'client-1';
   const endpoint = 'foo';
   const algorithm = 'token-bucket';
   const key = `${clientId}:${endpoint}:${algorithm}`;

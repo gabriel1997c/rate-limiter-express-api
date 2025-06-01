@@ -3,12 +3,12 @@ import { ClientsEndpointsAlgorithmsConfig } from '../types';
 import { ConfigBuilder } from './configBuilder';
 
 export const config: ClientsEndpointsAlgorithmsConfig = new ConfigBuilder()
-  .set('client-a', 'foo', 'token-bucket', {
+  .set('client-1', 'bar', 'token-bucket', {
     capacity: 3,
     tokenRegenerationRate: 0.5 / MS_PER_SECOND,
   })
-  .set('client-b', 'foo', 'token-bucket', {
-    capacity: 5,
-    tokenRegenerationRate: 0.2 / MS_PER_SECOND,
+  .set('client-2', 'foo', 'sliding-window-log', {
+    windowMs: 10 * MS_PER_SECOND,
+    limit: 3,
   })
   .build();
