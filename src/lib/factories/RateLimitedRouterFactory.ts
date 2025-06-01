@@ -19,7 +19,7 @@ export class RateLimitedRouterFactory {
         const authHeader = req.headers.authorization;
         const clientId = authHeader?.split(' ')[1];
 
-        logger.debug(`[${endpoint}] Request: Endpoint - ${endpoint} ; Client Id: ${clientId}`);
+        logger.info(`[${endpoint}] Request: Endpoint - ${endpoint} ; Client Id: ${clientId}`);
 
         if (!clientId) {
           logger.warn(`[${endpoint}] Missing client ID`);
@@ -49,8 +49,6 @@ export class RateLimitedRouterFactory {
 
         const limiter = RateLimiterFactory.create(identifiedConfig, this.store);
         const result = await limiter.allow(clientId, endpoint);
-
-        logger.debug(`result: ${JSON.stringify(result)}`);
 
         res.set({
           'X-RateLimit-Limit': result.limit.toString(),
